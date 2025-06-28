@@ -1,3 +1,4 @@
+// pages/api/register.js
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -25,22 +26,30 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'יש לאשר את ההצהרה כדי להצטרף' });
   }
 
-  const { data, error } = await supabase.from('members').insert([
-    {
-      first_name,
-      last_name,
-      city,
-      birthdate,
-      phone,
-      id_number,
-      email
+  try {
+    const { data, error } = await supabase
+      .from('members')
+      .insert([
+        {
+          first_name,
+          last_name,
+          city,
+          birthdate,
+          phone,
+          id_number,
+          email,
+          joined_at: new Date().toISOString()
+        }
+      ]);
+
+    if (error) {
+      console.error('DB Insert Error:', error);
+      return res.status(500).json({ error: 'שגיאה בשמירת הנתונים' });
     }
-  ]);
 
-  if (error) {
-    console.error('DB Insert Error:', error);
-    return res.status(500).json({ error: 'שגיאה בשמירת הנתונים' });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    res.status(500).json({ error: 'שגיאה כללית בשרת' });
   }
-
-  res.status(200).json({ success: true });
 }
