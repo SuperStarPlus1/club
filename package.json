@@ -1,5 +1,9 @@
-"dependencies": {
-  "nodemailer": "^6.9.0",
-  "exceljs": "^4.3.0",
-  "@supabase/supabase-js": "^2.39.3"
+{
+  "name": "membership-lead-form",
+  "version": "1.0.0",
+  "description": "טופס הצטרפות למועדון לקוחות עם שמירה ל-Supabase",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  }
 }
