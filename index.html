@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>הצטרפות למועדון</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 2rem;
+      max-width: 500px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.2rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>הצטרפות למועדון החברים</h2>
+  <form id="leadForm">
+    <label>שם פרטי<input name="first_name" required></label>
+    <label>שם משפחה<input name="last_name" required></label>
+    <label>עיר מגורים<input name="city" required></label>
+    <label>תאריך לידה<input name="birthdate" type="date" required></label>
+    <label>מספר טלפון<input name="phone" type="tel" required></label>
+    <label>תעודת זהות<input name="id_number" required></label>
+    <label>כתובת מייל<input name="email" type="email" required></label>
+    <label><input type="checkbox" name="agree" required> אני מאשר/ת את הצהרת ההצטרפות</label>
+    <button type="submit">שלח</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('leadForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert('נרשמת בהצלחה!');
+        form.reset();
+      } else {
+        alert('שגיאה בשליחה. נסה שוב.');
+      }
+    });
+  </script>
+</body>
+</html>
