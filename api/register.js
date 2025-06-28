@@ -1,13 +1,35 @@
-console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
-console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? '✔️ Loaded' : '❌ Missing');
-
-// pages/api/register.js
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
+
+function isValidIsraeliPhone(phone) {
+  return /^05\d{8}$/.test(phone);
+}
+
+function isValidIsraeliID(id) {
+  id = String(id).trim();
+  if (!/^\d{5,9}$/.test(id)) return false;
+  id = id.padStart(9, '0');
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    let num = Number(id[i]) * ((i % 2) + 1);
+    if (num > 9) num -= 9;
+    sum += num;
+  }
+  return sum % 10 === 0;
+}
+
+function isOver18(birthdateStr) {
+  const birthDate = new Date(birthdateStr);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  const d = today.getDate() - birthDate.getDate();
+  return age > 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -29,8 +51,20 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'יש לאשר את ההצהרה כדי להצטרף' });
   }
 
+  if (!isValidIsraeliPhone(phone)) {
+    return res.status(400).json({ error: 'מספר טלפון לא תקין' });
+  }
+
+  if (!isValidIsraeliID(id_number)) {
+    return res.status(400).json({ error: 'מספר תעודת זהות לא תקין' });
+  }
+
+  if (!isOver18(birthdate)) {
+    return res.status(400).json({ error: 'ההרשמה מותרת מגיל 18 ומעלה בלבד' });
+  }
+
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('members')
       .insert([
         {
