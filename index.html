@@ -5,51 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>טופס הצטרפות למועדון</title>
   <style>
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 6px; }
-    .error-msg { color: red; font-size: 0.9em; }
-    button { margin-top: 15px; padding: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: auto;
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 40px;
+      direction: rtl;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="email"], input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #recaptcha-container {
+      margin-top: 10px;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
 </head>
 <body>
-  <h2>הצטרפות למועדון</h2>
-  <form id="registerForm">
-    <label>שם פרטי:
-      <input type="text" id="first_name" required />
-      <span class="error-msg" data-field="first_name"></span>
-    </label>
-    <label>שם משפחה:
-      <input type="text" id="last_name" required />
-      <span class="error-msg" data-field="last_name"></span>
-    </label>
-    <label>עיר מגורים:
-      <input type="text" id="city" required />
-      <span class="error-msg" data-field="city"></span>
-    </label>
-    <label>תאריך לידה:
-      <input type="date" id="birthdate" required />
-      <span class="error-msg" data-field="birthdate"></span>
-    </label>
-    <label>טלפון:
-      <input type="text" id="phone" required />
-      <span class="error-msg" data-field="phone"></span>
-    </label>
-    <label>ת.ז:
-      <input type="text" id="id_number" required />
-      <span class="error-msg" data-field="id_number"></span>
-    </label>
-    <label>מייל:
-      <input type="email" id="email" required />
-      <span class="error-msg" data-field="email"></span>
-    </label>
-    <label>
-      <input type="checkbox" id="agree" /> אני מאשר/ת את תנאי ההצטרפות
-      <span class="error-msg" data-field="agree"></span>
-    </label>
-    <button type="submit">הצטרף</button>
-    <span class="error-msg" data-field="general"></span>
-  </form>
+  <h2>הצטרפות למועדון הלקוחות</h2>
+  <div>
+    <label>שם פרטי</label>
+    <input type="text" id="first_name" required>
 
-  <script src="script.js"></script>
+    <label>שם משפחה</label>
+    <input type="text" id="last_name" required>
+
+    <label>עיר מגורים</label>
+    <input type="text" id="city" required>
+
+    <label>תאריך לידה</label>
+    <input type="date" id="birthdate" required>
+
+    <label>מספר טלפון</label>
+    <input type="text" id="phone" placeholder="0521234567" required>
+
+    <div id="recaptcha-container"></div>
+    <button onclick="sendCode()">שלח קוד אימות</button>
+
+    <label>קוד אימות</label>
+    <input type="text" id="code" placeholder="הזן קוד שקיבלת">
+    <button onclick="verifyCode()">אמת מספר</button>
+
+    <label>תעודת זהות</label>
+    <input type="text" id="id_number" required>
+
+    <label>דוא"ל</label>
+    <input type="email" id="email" required>
+
+    <label>
+      <input type="checkbox" id="agree" required>
+      אני מאשר/ת את הצהרת הפרטיות
+    </label>
+
+    <button onclick="registerUser()">הרשמה</button>
+
+    <p id="message"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUa053dfwPsrIuPPN5KCOwCQBIXm26rxw",
+      authDomain: "superstarclub-23f6b.firebaseapp.com",
+      projectId: "superstarclub-23f6b",
+      storageBucket: "superstarclub-23f6b.firebasestorage.app",
+      messagingSenderId: "578554821824",
+      appId: "1:578554821824:web:fd49071f6c19a1f0fe4125",
+      measurementId: "G-JL42HD048H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let confirmationResult;
+    let phoneVerified = false;
+
+    window.sendCode = () => {
+      const phone = document.getElementById("phone").value;
+      if (!/^05\d{8}$/.test(phone)) {
+        document.getElementById("message").innerText = "מספר טלפון לא תקין";
+        return;
+      }
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "normal",
+        callback: () => {}
+      });
+      signInWithPhoneNumber(auth, `+972${phone.slice(1)}`, window.recaptchaVerifier)
+        .then((result) => {
+          confirmationResult = result;
+          document.getElementById("message").innerText = "קוד נשלח לטלפון שלך";
+        })
+        .catch((error) => {
+          document.getElementById("message").innerText = "שגיאה בשליחת קוד: " + error.message;
+        });
+    };
+
+    window.verifyCode = () => {
+      const code = document.getElementById("code").value;
+      confirmationResult.confirm(code)
+        .then(() => {
+          phoneVerified = true;
+          document.getElementById("message").innerText = "אימות הצליח!";
+        })
+        .catch(() => {
+          document.getElementById("message").innerText = "קוד שגוי";
+        });
+    };
+
+    window.registerUser = async () => {
+      const message = document.getElementById("message");
+      if (!phoneVerified) {
+        message.innerText = "נא לאמת קודם את מספר הטלפון";
+        return;
+      }
+
+      const body = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        city: document.getElementById("city").value,
+        birthdate: document.getElementById("birthdate").value,
+        phone: document.getElementById("phone").value,
+        id_number: document.getElementById("id_number").value,
+        email: document.getElementById("email").value,
+        agree: document.getElementById("agree").checked
+      };
+
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        message.innerText = "נרשמת בהצלחה!";
+      } else {
+        message.innerText = data.error || "שגיאה בהרשמה";
+      }
+    };
+  </script>
 </body>
 </html>
