@@ -1,3 +1,6 @@
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? '✔️ Loaded' : '❌ Missing');
+
 // pages/api/register.js
 import { createClient } from '@supabase/supabase-js';
 
