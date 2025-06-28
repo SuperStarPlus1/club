@@ -1,0 +1,74 @@
+<!-- verify-phone.html -->
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אימות מספר טלפון</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+</head>
+<body>
+  <h2>אימות טלפון עם Firebase</h2>
+
+  <label>מספר טלפון (כולל קידומת):</label><br>
+  <input type="text" id="phone" placeholder="0521234567" /><br><br>
+
+  <div id="recaptcha-container"></div><br>
+  <button onclick="sendCode()">שלח קוד</button><br><br>
+
+  <label>הכנס קוד שהתקבל:</label><br>
+  <input type="text" id="code" placeholder="123456" /><br><br>
+  <button onclick="verifyCode()">אמת</button>
+
+  <p id="message"></p>
+
+  <script type="module">
+    // firebase-config.js
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let confirmationResult;
+
+    window.sendCode = () => {
+      const phone = document.getElementById('phone').value;
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'normal',
+        'callback': () => {},
+      });
+
+      signInWithPhoneNumber(auth, `+972${phone.slice(1)}`, window.recaptchaVerifier)
+        .then((result) => {
+          confirmationResult = result;
+          document.getElementById('message').innerText = 'קוד נשלח בהצלחה';
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById('message').innerText = 'שגיאה בשליחת הקוד';
+        });
+    };
+
+    window.verifyCode = () => {
+      const code = document.getElementById('code').value;
+      confirmationResult.confirm(code)
+        .then(() => {
+          document.getElementById('message').innerText = 'אימות הצליח!';
+        })
+        .catch(() => {
+          document.getElementById('message').innerText = 'קוד שגוי';
+        });
+    };
+  </script>
+</body>
+</html>
