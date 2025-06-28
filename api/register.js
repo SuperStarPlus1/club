@@ -64,6 +64,36 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { data: existingPhone, error: phoneError } = await supabase
+      .from('members')
+      .select('id')
+      .eq('phone', phone)
+      .single();
+
+    if (existingPhone) {
+      return res.status(400).json({ field: 'phone', error: 'מספר טלפון זה כבר קיים במערכת' });
+    }
+
+    const { data: existingID, error: idError } = await supabase
+      .from('members')
+      .select('id')
+      .eq('id_number', id_number)
+      .single();
+
+    if (existingID) {
+      return res.status(400).json({ field: 'id_number', error: 'תעודת זהות זו כבר קיימת במערכת' });
+    }
+
+    const { data: existingEmail, error: emailError } = await supabase
+      .from('members')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingEmail) {
+      return res.status(400).json({ field: 'email', error: 'כתובת מייל זו כבר קיימת במערכת' });
+    }
+
     const { error } = await supabase
       .from('members')
       .insert([
