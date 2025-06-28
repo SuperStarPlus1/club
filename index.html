@@ -3,72 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>הצטרפות למועדון</title>
+  <title>טופס הצטרפות למועדון</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 2rem;
-      max-width: 500px;
-      margin: auto;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-    }
-    input, select {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.2rem;
-    }
-    button {
-      margin-top: 1.5rem;
-      padding: 0.75rem;
-      width: 100%;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 6px; }
+    .error-msg { color: red; font-size: 0.9em; }
+    button { margin-top: 15px; padding: 10px; }
   </style>
 </head>
 <body>
-  <h2>הצטרפות למועדון החברים</h2>
-  <form id="leadForm">
-    <label>שם פרטי<input name="first_name" required></label>
-    <label>שם משפחה<input name="last_name" required></label>
-    <label>עיר מגורים<input name="city" required></label>
-    <label>תאריך לידה<input name="birthdate" type="date" required></label>
-    <label>מספר טלפון<input name="phone" type="tel" required></label>
-    <label>תעודת זהות<input name="id_number" required></label>
-    <label>כתובת מייל<input name="email" type="email" required></label>
-    <label><input type="checkbox" name="agree" required> אני מאשר/ת את הצהרת ההצטרפות</label>
-    <button type="submit">שלח</button>
+  <h2>הצטרפות למועדון</h2>
+  <form id="registerForm">
+    <label>שם פרטי:
+      <input type="text" id="first_name" required />
+      <span class="error-msg" data-field="first_name"></span>
+    </label>
+    <label>שם משפחה:
+      <input type="text" id="last_name" required />
+      <span class="error-msg" data-field="last_name"></span>
+    </label>
+    <label>עיר מגורים:
+      <input type="text" id="city" required />
+      <span class="error-msg" data-field="city"></span>
+    </label>
+    <label>תאריך לידה:
+      <input type="date" id="birthdate" required />
+      <span class="error-msg" data-field="birthdate"></span>
+    </label>
+    <label>טלפון:
+      <input type="text" id="phone" required />
+      <span class="error-msg" data-field="phone"></span>
+    </label>
+    <label>ת.ז:
+      <input type="text" id="id_number" required />
+      <span class="error-msg" data-field="id_number"></span>
+    </label>
+    <label>מייל:
+      <input type="email" id="email" required />
+      <span class="error-msg" data-field="email"></span>
+    </label>
+    <label>
+      <input type="checkbox" id="agree" /> אני מאשר/ת את תנאי ההצטרפות
+      <span class="error-msg" data-field="agree"></span>
+    </label>
+    <button type="submit">הצטרף</button>
+    <span class="error-msg" data-field="general"></span>
   </form>
 
-  <script>
-    const form = document.getElementById('leadForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData);
-
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        alert('נרשמת בהצלחה!');
-        form.reset();
-      } else {
-        alert('שגיאה בשליחה. נסה שוב.');
-      }
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
