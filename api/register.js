@@ -33,7 +33,7 @@ function isOver18(birthdateStr) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ field: 'general', error: 'Method Not Allowed' });
   }
 
   const {
@@ -48,19 +48,19 @@ export default async function handler(req, res) {
   } = req.body;
 
   if (!agree) {
-    return res.status(400).json({ error: 'יש לאשר את ההצהרה כדי להצטרף' });
+    return res.status(400).json({ field: 'agree', error: 'יש לאשר את ההצהרה כדי להצטרף' });
   }
 
   if (!isValidIsraeliPhone(phone)) {
-    return res.status(400).json({ error: 'מספר טלפון לא תקין' });
+    return res.status(400).json({ field: 'phone', error: 'מספר טלפון לא תקין' });
   }
 
   if (!isValidIsraeliID(id_number)) {
-    return res.status(400).json({ error: 'מספר תעודת זהות לא תקין' });
+    return res.status(400).json({ field: 'id_number', error: 'מספר תעודת זהות לא תקין' });
   }
 
   if (!isOver18(birthdate)) {
-    return res.status(400).json({ error: 'ההרשמה מותרת מגיל 18 ומעלה בלבד' });
+    return res.status(400).json({ field: 'birthdate', error: 'ההרשמה מותרת מגיל 18 ומעלה בלבד' });
   }
 
   try {
@@ -81,12 +81,12 @@ export default async function handler(req, res) {
 
     if (error) {
       console.error('DB Insert Error:', error);
-      return res.status(500).json({ error: 'שגיאה בשמירת הנתונים' });
+      return res.status(500).json({ field: 'general', error: 'שגיאה בשמירת הנתונים' });
     }
 
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Unexpected error:', err);
-    res.status(500).json({ error: 'שגיאה כללית בשרת' });
+    res.status(500).json({ field: 'general', error: 'שגיאה כללית בשרת' });
   }
 }
